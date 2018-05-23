@@ -4,6 +4,9 @@
 using namespace cv;
 
 int main(int argc, char** argv) {
+
+   MPI_Init(argc, argv);
+
    cout <<"Nom du fichier : " << argv[1] << endl;
    Mat image = charger_image(argv[1]);
    int r = image.rows;
@@ -20,5 +23,8 @@ int main(int argc, char** argv) {
       }
       cout << endl;
    }
+
+   MPI_Finalize();
+
    return 0;
 }

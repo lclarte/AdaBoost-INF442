@@ -24,3 +24,6 @@ vector<int> calculer_tous_GAU(int, int, int**);
 vector<int> calculer_tous_HAU(int, int, int**);
 vector<int> calculer_tous_EXT(int, int, int**);
 vector<int> calculer_tous_DIA(int, int, int**);
+
+vector<int> calculer_caracteristiques_MPI(int**);
+int calculer_nombre_cases(int, int, int=NOMBRE_COLONNES*NOMBRE_LIGNES);

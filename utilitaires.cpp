@@ -23,16 +23,16 @@ Mat charger_image(char* filename) {
 //attention, i_i est stockee dans le format i_i[lignes][colonnnes]
 //ici, l est la ligne de depart, c colonne de depart
 int rectangle(int l, int c, int l2, int c2, int** i_i) {
-   return i_i[l2][c2] - i_i[l2][c] - i_i[l][c2] + i_i[l][c]
+   return i_i[l2][c2] - i_i[l2][c] - i_i[l][c2] + i_i[l][c];
 }
 
 //l1, l2, c1 : largeurs et hauteur
-int GAU(int l, int l1, int c, int c1,, int c2, int** image_integrale) {
+int GAU(int l, int l1, int c, int c1, int c2, int** image_integrale) {
    return rectangle(l, c, l+l1, l+c1, image_integrale) - rectangle(l, c+c1, l+l1, c+c1+c2, image_integrale);
 }
 
 int HAU(int l, int l1, int l2, int c, int c1, int **image_integrale) {
-   return -rectangle(l, c, l+l1, c+c1) + rectangle(l+l1, c, l+l1+l2, c+c1);
+   return -rectangle(l, c, l+l1, c+c1, image_integrale) + rectangle(l+l1, c, l+l1+l2, c+c1, image_integrale);
 }
 
 int EXT(int l, int l1, int c, int c1, int c2, int c3, int **image_integrale) {
@@ -138,6 +138,8 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
 }
 
 int calculer_nombre_cases(int taskid, int tasknb, int nb_cases) {
-    return nb_cases/tasknb + (taskid < (nb_cases%tasknb) ? 1 : 0);
+	int nb_cases_reduit = nb_cases/16; //on va faire des deplacements de 4 en 4
+	//sur les deux directions donc le nombre total de cases est divise par 16
+    return nb_cases_reduit/tasknb + (taskid < (nb_cases_reduit%tasknb) ? 1 : 0);
 }
 
