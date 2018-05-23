@@ -8,11 +8,13 @@ using namespace std;
 
 const int NOMBRE_COLONNES = 92;
 const int NOMBRE_LIGNES   = 112;
+const int NOMBRE_CASES    = NOMBRE_COLONNES*NOMBRE_LIGNES;
 const int DELTA_TAILLE    = 4;
 const int MIN_TAILLE      = 8;
 
-const int NB_LGN_REDUIT = NOMBRE_LIGNES/DELTA_TAILLE;
-const int NB_CLN_REDUIT = NOMBRE_COLONNES/DELTA_TAILLE;
+const int NB_CASES_REDUIT = NOMBRE_CASES/(DELTA_TAILLE*DELTA_TAILLE);
+const int NB_LGN_REDUIT   = NOMBRE_LIGNES/DELTA_TAILLE;
+const int NB_CLN_REDUIT   = NOMBRE_COLONNES/DELTA_TAILLE;
 
 void calculer_image_integrale(int**, Mat);
 Mat charger_image(char*);

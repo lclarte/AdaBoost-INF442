@@ -1,4 +1,6 @@
 #include "utilitaires.h"
+#include <math.h>
+#include <iterator>
 
 void calculer_image_integrale(int **image_integrale, Mat image) {
       int rows = image.rows;
@@ -122,10 +124,16 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   //2emement, on va repartir selon taskid les calculs des caracteristiques
   int taskcases = calculer_nombre_cases(taskid, tasknb);
 
-  vector<int> carac_locales = vector<int>();
+  //Ensuite, on va calculer les dites carac.
+  /**
+   * On a un tableau de 4*taskcases cases (parce qu'on calcule pour GAU, HAU, EXT et DIA)
+   * On parcourt dans une boucle toutes les cases du tableau et on appelle calculer_tous_***
+   */
+  vector<int>* carac_locales_array = new vector<int>[taskcases]; //stocke les vector 
   int case_actuelle_reduite = taskid; //case actuelle est un nombre, faut le convertir en couple (l, c)
   int l_actuel, c_actuel;
   for(int c = 0; c < taskcases; c++) {
+  	vector<int> carac_locales = vector<int>();
   	convertir_case_indices(case_actuelle_reduite, l_actuel, c_actuel);
 
   	vector<int> tmp1 = calculer_tous_GAU(l_actuel, c_actuel, image_integrale); 
@@ -138,21 +146,40 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   	carac_locales.insert(carac_locales.end(), tmp3.begin(), tmp3.end());
   	carac_locales.insert(carac_locales.end(), tmp4.begin(), tmp4.end());
 
+  	carac_locales_array[c] = carac_locales;
   	case_actuelle_reduite += tasknb;
   }
-  //Ensuite, on va calculer les dites carac.
-  /**
-   * On a un tableau de 4*taskcases cases (parce qu'on calcule pour GAU, HAU, EXT et DIA)
-   * On parcourt dans une boucle toutes les cases du tableau et on appelle calculer_tous_***
-   */
 
   //3emement, on va envoyer les carac. au root de la facon suivante (idee basique)
   //Le root va parcourir l'image et regarder case par case le proc. qui est cense envoyer 
   //les donnees.
-  //le proc, de son cote, va envoyer au root les donnes calculees sous forme de tableau (attention, il faudra 
-  //convertir un array en vector et reciproquement
+  if(taskid == root) {
+  	vector<int> contenu_total = vector<int>();
 
-  //Le root va stocker toutes ces donnees dans un vector qu'il va retourner
+  	//on parcourt toutes les cases 
+  	for(int c = 0; c < NB_CASES_REDUIT; c++) {
+  		MPI_Status* status;
+  		int task_src = c % tasknb;
+  		int taille_contenu;
+  		int* contenu_recu;
+  		MPI_Recv(&taille_contenu, 1, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
+  		MPI_Recv(contenu_recu, taille_contenu, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
+
+  		for(int i = 0; i < taille_contenu; i++) {
+  			contenu_total.push_back(contenu_recu[i]);
+  		}
+  	}
+  }
+  else{
+  	//du cote des autres process, on va envoyer en continu tous les data
+  	for(int t = 0; t < taskcases; t++) {
+  		vector<int> a_envoyer = carac_locales_array[t];
+  		int taille_envoi = a_envoyer.size();
+  		MPI_Send(&taille_envoi, 1, MPI_INT, root, 0, MPI_COMM_WORLD);
+  		MPI_Send(a_envoyer.data(), a_envoyer.size(), MPI_INT, root, 0, MPI_COMM_WORLD);
+  	}
+  }
+
 }
 
 int calculer_nombre_cases(int taskid, int tasknb, int nb_cases) {
