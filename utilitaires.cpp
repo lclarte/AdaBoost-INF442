@@ -136,3 +136,8 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
 
   //Le root va stocker toutes ces donnees dans un vector qu'il va retourner
 }
+
+int calculer_nombre_cases(int taskid, int tasknb, int nb_cases) {
+    return nb_cases/tasknb + (taskid < (nb_cases%tasknb) ? 1 : 0);
+}
+
