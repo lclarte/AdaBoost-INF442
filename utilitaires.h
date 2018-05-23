@@ -11,6 +11,9 @@ const int NOMBRE_LIGNES   = 112;
 const int DELTA_TAILLE    = 4;
 const int MIN_TAILLE      = 8;
 
+const int NB_LGN_REDUIT = NOMBRE_LIGNES/DELTA_TAILLE;
+const int NB_CLN_REDUIT = NOMBRE_COLONNES/DELTA_TAILLE;
+
 void calculer_image_integrale(int**, Mat);
 Mat charger_image(char*);
 
@@ -27,3 +30,4 @@ vector<int> calculer_tous_DIA(int, int, int**);
 
 vector<int> calculer_caracteristiques_MPI(int**);
 int calculer_nombre_cases(int, int, int=NOMBRE_COLONNES*NOMBRE_LIGNES);
+void convertir_case_indices(int, int&, int&);

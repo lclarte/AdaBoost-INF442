@@ -122,10 +122,28 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   //2emement, on va repartir selon taskid les calculs des caracteristiques
   int taskcases = calculer_nombre_cases(taskid, tasknb);
 
-//Ensuite, on va calculer les dites carac.
+  vector<int> carac_locales = vector<int>();
+  int case_actuelle_reduite = taskid; //case actuelle est un nombre, faut le convertir en couple (l, c)
+  int l_actuel, c_actuel;
+  for(int c = 0; c < taskcases; c++) {
+  	convertir_case_indices(case_actuelle_reduite, l_actuel, c_actuel);
+
+  	vector<int> tmp1 = calculer_tous_GAU(l_actuel, c_actuel, image_integrale); 
+  	vector<int> tmp2 = calculer_tous_HAU(l_actuel, c_actuel, image_integrale);
+  	vector<int> tmp3 = calculer_tous_EXT(l_actuel, c_actuel, image_integrale);
+  	vector<int> tmp4 = calculer_tous_DIA(l_actuel, c_actuel, image_integrale);
+  	
+  	carac_locales.insert(carac_locales.end(), tmp1.begin(), tmp1.end());
+  	carac_locales.insert(carac_locales.end(), tmp2.begin(), tmp2.end());
+  	carac_locales.insert(carac_locales.end(), tmp3.begin(), tmp3.end());
+  	carac_locales.insert(carac_locales.end(), tmp4.begin(), tmp4.end());
+
+  	case_actuelle_reduite += tasknb;
+  }
+  //Ensuite, on va calculer les dites carac.
   /**
    * On a un tableau de 4*taskcases cases (parce qu'on calcule pour GAU, HAU, EXT et DIA)
-   * On parcour dans une boucle toutes les cases du tableau et on appelle calculer_tous_***
+   * On parcourt dans une boucle toutes les cases du tableau et on appelle calculer_tous_***
    */
 
   //3emement, on va envoyer les carac. au root de la facon suivante (idee basique)
@@ -143,3 +161,9 @@ int calculer_nombre_cases(int taskid, int tasknb, int nb_cases) {
     return nb_cases_reduit/tasknb + (taskid < (nb_cases_reduit%tasknb) ? 1 : 0);
 }
 
+//convertit en prenant en compte le fait que on passe DELTA_TAILLE cases dans le sens des lignes et colonnes
+//on suppose que indice est deja dans NOMBRE_LIGNES*NOMBRE_COLONNES/(DELTA_TAILLE**2) 
+void convertir_case_indices(int indice_reduit, int& ligne_reelle, int& colonne_reelle) {
+	ligne_reelle = indice_reduit*DELTA_TAILLE/NB_CLN_REDUIT;
+	colonne_reelle = DELTA_TAILLE*(indice_reduit%NB_CLN_REDUIT);
+}
