@@ -4,13 +4,14 @@ Classifieur::~Classifieur() {
 
 }
 
-Classifieur::Classifieur() {
-	Classifieur(1.0, 0);
+Classifieur::Classifieur(int i) {
+	Classifieur(1.0, 0, i);
 }
 
-Classifieur::Classifieur(float w_1, float w_2) {
+Classifieur::Classifieur(float w_1, float w_2, int i) {
 	this->w1 = w_1;
 	this->w2 = w_2;
+	this->indice = i;
 }
 
 int Classifieur::classifier(int x) {
