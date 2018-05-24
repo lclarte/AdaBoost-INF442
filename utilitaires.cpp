@@ -1,5 +1,6 @@
 #include "utilitaires.h"
 #include <math.h>
+#include <time.h>
 #include <iterator>
 
 /**
@@ -128,6 +129,8 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   //On fait l'hypothese que MPI_Init et MPI_Finalize sont deja appeles dans le main
 
   const int root = 0;
+  clock_t t1, t2;
+  t1 = clock();
   int tasknb, taskid;
 
   MPI_Comm_size(MPI_COMM_WORLD, &tasknb);
@@ -190,12 +193,12 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
 	  		int* contenu_recu;
 	  		MPI_Recv(&taille_contenu, 1, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
 	  		if(taille_contenu > 0) {
-	  			/*MPI_Recv(contenu_recu, taille_contenu, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
+	  			contenu_recu = new int[taille_contenu];
+	  			MPI_Recv(contenu_recu, taille_contenu, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
 	  			for(int i = 0; i < taille_contenu; i++) {
-	  				contenu_total.push_back(contenu_recu[i]); BUG A CE NIVEAU LA 
-	  				cout << "Contenu recu de taille " << taille_contenu << " de la part du process " << task_src << endl;
-	  			}*/
-			}
+	  				contenu_total.push_back(contenu_recu[i]); 
+	  			}
+	  		}
 
 	  	}
 	  	else{
@@ -205,8 +208,10 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
 	  		compteur_array_local += 1;
 	  	}
 
-	  	cout << "Taille du vecteur retourne par root : " << contenu_total.size() << endl;
-  	}	
+	}
+	cout << "Taille totale : " << contenu_total.size() << endl;	
+	t2 = clock();
+	cout << "Temps d'execution : " << t2 - t1 << endl;
   	return contenu_total;
   }
   else{
@@ -216,7 +221,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   		int taille_envoi = a_envoyer.size();
   		MPI_Send(&taille_envoi, 1, MPI_INT, root, 0, MPI_COMM_WORLD);
   		if(taille_envoi > 0){
-  			//MPI_Send(a_envoyer.data(), a_envoyer.size(), MPI_INT, root, 0, MPI_COMM_WORLD);
+  			MPI_Send(a_envoyer.data(), a_envoyer.size(), MPI_INT, root, 0, MPI_COMM_WORLD);
   		}
   	}
 
