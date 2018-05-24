@@ -1,0 +1,7 @@
+Pour le Makefile, voir celui fournit dans le projet d'exemple.
+
+Pour l'execution, taper 
+
+LD_LIBRARY_PATH=/usr/local/opencv-3.4.1/lib64 /usr/local/openmpi-3.0.1/bin/mpirun -np 4 main /usr/local/INF442-2018/P5/test/neg/im0.jpg 
+
+(cf cette URL : https://moodle.polytechnique.fr/pluginfile.php/107117/mod_resource/content/2/README)
