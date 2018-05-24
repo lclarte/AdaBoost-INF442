@@ -2,6 +2,23 @@
 #include <math.h>
 #include <iterator>
 
+/**
+	ATTENTION : FORMAT DE L'IMAGE INTEGRALE : tab[image][colonne]
+*/
+
+/***
+
+rque : EN THEORIE ON A AU TOTAL : 
+GAU : 675675 calculs
+HAU: 540540    "
+EXT:4054050
+DIA: 4504500
+==========
+total : 9774765 > 7000000 (experimentalement)
+peut etre une peitte erreur de calcul au niveau des indicages mais je ne pense pas que ca change grand chose
+*/
+
+
 void calculer_image_integrale(int **image_integrale, Mat image) {
       int rows = image.rows;
       int cols = image.cols;
@@ -30,7 +47,7 @@ int rectangle(int l, int c, int l2, int c2, int** i_i) {
 
 //l1, l2, c1 : largeurs et hauteur
 int GAU(int l, int l1, int c, int c1, int c2, int** image_integrale) {
-   return rectangle(l, c, l+l1, l+c1, image_integrale) - rectangle(l, c+c1, l+l1, c+c1+c2, image_integrale);
+   return rectangle(l, c, l+l1, c+c1, image_integrale) - rectangle(l, c+c1, l+l1, c+c1+c2, image_integrale);
 }
 
 int HAU(int l, int l1, int l2, int c, int c1, int **image_integrale) {
@@ -63,6 +80,7 @@ vector<int> calculer_tous_GAU(int l_depart, int c_depart, int** image_integrale)
 			}
 		}
 	}
+	return carac_GAU;
 }
 
 vector<int> calculer_tous_HAU(int l_depart, int c_depart, int** image_integrale) {
@@ -75,8 +93,7 @@ vector<int> calculer_tous_HAU(int l_depart, int c_depart, int** image_integrale)
          }
       }
    }
-
-
+   return carac_HAU;
 }
 
 vector<int> calculer_tous_EXT(int l_depart, int c_depart, int** image_integrale) {
@@ -90,6 +107,7 @@ vector<int> calculer_tous_EXT(int l_depart, int c_depart, int** image_integrale)
 			}
 		}
 	}
+	return carac_EXT;
 }
 
 vector<int> calculer_tous_DIA(int l_depart, int c_depart, int** image_integrale) {
@@ -103,6 +121,7 @@ vector<int> calculer_tous_DIA(int l_depart, int c_depart, int** image_integrale)
 			}
 		}
 	}
+	return carac_DIA;
 }
 
 vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
@@ -115,8 +134,9 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
 
   //1erement, on verifie qu'on a une puissance de deux pour le nombre de proc.
-  const float k = log(tasknb);
+  const float k = log2(tasknb);
   if(floor(k) - k < 0) {
+
       cerr << "Probleme dans le nombre de processus : il doit etre une puissance de deux" << endl;
       return vector<int>();
   }
@@ -124,7 +144,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   //2emement, on va repartir selon taskid les calculs des caracteristiques
   int taskcases = calculer_nombre_cases(taskid, tasknb);
 
-  //Ensuite, on va calculer les dites carac.
+  //Ensuite, on vectora calculer les dites carac.
   /**
    * On a un tableau de 4*taskcases cases (parce qu'on calcule pour GAU, HAU, EXT et DIA)
    * On parcourt dans une boucle toutes les cases du tableau et on appelle calculer_tous_***
@@ -132,6 +152,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   vector<int>* carac_locales_array = new vector<int>[taskcases]; //stocke les vector 
   int case_actuelle_reduite = taskid; //case actuelle est un nombre, faut le convertir en couple (l, c)
   int l_actuel, c_actuel;
+  int nb_total_cases = 0;
   for(int c = 0; c < taskcases; c++) {
   	vector<int> carac_locales = vector<int>();
   	convertir_case_indices(case_actuelle_reduite, l_actuel, c_actuel);
@@ -141,34 +162,52 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   	vector<int> tmp3 = calculer_tous_EXT(l_actuel, c_actuel, image_integrale);
   	vector<int> tmp4 = calculer_tous_DIA(l_actuel, c_actuel, image_integrale);
   	
-  	carac_locales.insert(carac_locales.end(), tmp1.begin(), tmp1.end());
+  	carac_locales.insert(carac_locales.end(), tmp1.begin(), tmp1.end()); // ORDE : GAU, HAU, EXT, DIA
   	carac_locales.insert(carac_locales.end(), tmp2.begin(), tmp2.end());
   	carac_locales.insert(carac_locales.end(), tmp3.begin(), tmp3.end());
   	carac_locales.insert(carac_locales.end(), tmp4.begin(), tmp4.end());
 
   	carac_locales_array[c] = carac_locales;
   	case_actuelle_reduite += tasknb;
+  	nb_total_cases += carac_locales.size();
   }
+
+  cout << "Le process " << taskid << " a termine. Nombre de cas traites : " << nb_total_cases << endl;
 
   //3emement, on va envoyer les carac. au root de la facon suivante (idee basique)
   //Le root va parcourir l'image et regarder case par case le proc. qui est cense envoyer 
   //les donnees.
   if(taskid == root) {
+  	int compteur_array_local = 0; //compte la case du tableau carac_locale_array a stocker
   	vector<int> contenu_total = vector<int>();
 
   	//on parcourt toutes les cases 
   	for(int c = 0; c < NB_CASES_REDUIT; c++) {
   		MPI_Status* status;
   		int task_src = c % tasknb;
-  		int taille_contenu;
-  		int* contenu_recu;
-  		MPI_Recv(&taille_contenu, 1, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
-  		MPI_Recv(contenu_recu, taille_contenu, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
+	  	if(task_src != root){	
+	  		int taille_contenu;
+	  		int* contenu_recu;
+	  		MPI_Recv(&taille_contenu, 1, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
+	  		if(taille_contenu > 0) {
+	  			/*MPI_Recv(contenu_recu, taille_contenu, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
+	  			for(int i = 0; i < taille_contenu; i++) {
+	  				contenu_total.push_back(contenu_recu[i]); BUG A CE NIVEAU LA 
+	  				cout << "Contenu recu de taille " << taille_contenu << " de la part du process " << task_src << endl;
+	  			}*/
+			}
 
-  		for(int i = 0; i < taille_contenu; i++) {
-  			contenu_total.push_back(contenu_recu[i]);
-  		}
-  	}
+	  	}
+	  	else{
+	  		for(int i = 0; i < carac_locales_array[compteur_array_local].size(); i++) {
+	  			contenu_total.push_back(carac_locales_array[compteur_array_local].at(i));
+	  		}
+	  		compteur_array_local += 1;
+	  	}
+
+	  	cout << "Taille du vecteur retourne par root : " << contenu_total.size() << endl;
+  	}	
+  	return contenu_total;
   }
   else{
   	//du cote des autres process, on va envoyer en continu tous les data
@@ -176,8 +215,11 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   		vector<int> a_envoyer = carac_locales_array[t];
   		int taille_envoi = a_envoyer.size();
   		MPI_Send(&taille_envoi, 1, MPI_INT, root, 0, MPI_COMM_WORLD);
-  		MPI_Send(a_envoyer.data(), a_envoyer.size(), MPI_INT, root, 0, MPI_COMM_WORLD);
+  		if(taille_envoi > 0){
+  			//MPI_Send(a_envoyer.data(), a_envoyer.size(), MPI_INT, root, 0, MPI_COMM_WORLD);
+  		}
   	}
+
   }
 
 }
@@ -191,6 +233,7 @@ int calculer_nombre_cases(int taskid, int tasknb, int nb_cases) {
 //convertit en prenant en compte le fait que on passe DELTA_TAILLE cases dans le sens des lignes et colonnes
 //on suppose que indice est deja dans NOMBRE_LIGNES*NOMBRE_COLONNES/(DELTA_TAILLE**2) 
 void convertir_case_indices(int indice_reduit, int& ligne_reelle, int& colonne_reelle) {
-	ligne_reelle = indice_reduit*DELTA_TAILLE/NB_CLN_REDUIT;
-	colonne_reelle = DELTA_TAILLE*(indice_reduit%NB_CLN_REDUIT);
+	ligne_reelle = DELTA_TAILLE*(indice_reduit/NB_CLN_REDUIT)-1;
+	colonne_reelle = DELTA_TAILLE*(indice_reduit%NB_CLN_REDUIT)-1;
 }
+

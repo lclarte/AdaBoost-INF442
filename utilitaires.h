@@ -6,10 +6,10 @@
 using namespace cv;
 using namespace std;
 
-const int NOMBRE_COLONNES = 92;
-const int NOMBRE_LIGNES   = 112;
+const int NOMBRE_COLONNES = 112;
+const int NOMBRE_LIGNES   = 92;
 const int NOMBRE_CASES    = NOMBRE_COLONNES*NOMBRE_LIGNES;
-const int DELTA_TAILLE    = 4;
+const int DELTA_TAILLE    = 4; //vraie valeur : 4
 const int MIN_TAILLE      = 8;
 
 const int NB_CASES_REDUIT = NOMBRE_CASES/(DELTA_TAILLE*DELTA_TAILLE);
