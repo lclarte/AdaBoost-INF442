@@ -129,8 +129,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   //On fait l'hypothese que MPI_Init et MPI_Finalize sont deja appeles dans le main
 
   const int root = 0;
-  clock_t t1, t2;
-  t1 = clock();
+  clock_t t1, t2; //pour avoir le temps ecoule : t1 = clock()
   int tasknb, taskid;
 
   MPI_Comm_size(MPI_COMM_WORLD, &tasknb);
@@ -189,7 +188,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   		MPI_Status* status;
   		int task_src = c % tasknb;
 	  	if(task_src != root){	
-	  		int taille_contenu;
+	  		int taille_contenu = 0;
 	  		int* contenu_recu;
 	  		MPI_Recv(&taille_contenu, 1, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
 	  		if(taille_contenu > 0) {
@@ -209,11 +208,9 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
 	  	}
 
 	}
-	cout << "Taille totale : " << contenu_total.size() << endl;	
-	t2 = clock();
-	cout << "Temps d'execution : " << t2 - t1 << endl;
-  	return contenu_total;
+  return contenu_total;
   }
+
   else{
   	//du cote des autres process, on va envoyer en continu tous les data
   	for(int t = 0; t < taskcases; t++) {
@@ -225,7 +222,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   		}
   	}
 
-  }
+  }  
 
 }
 

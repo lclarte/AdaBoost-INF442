@@ -1,5 +1,8 @@
 #include "apprentissage.h"
 
+using namespace std;
+
+
 void entrainer_classifieurs(vector<Classifieur*> cls, float epsilon, int K) {
 	//Cette fonction est appelee par chaque process, qui va charger K images dans le dossier de 
 	//maniere aleatoire. On va boucler sur chaque image, calculer le vecteur caracteriristique 
@@ -11,6 +14,8 @@ void entrainer_classifieurs(vector<Classifieur*> cls, float epsilon, int K) {
 }
 
 vector<Classifieur> creation_classifieur_faible(float epsilon, int K) {
+
+	//Dans un premier temps, on doit connaitre la longueur du vecteur caracteristique
 
 	//On va creer les classifieurs, envoyer depuis le root les indices des classifieurs, 	
 	//les autres vont recuperer les indices, creer localement les classifieurs et 

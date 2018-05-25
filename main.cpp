@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
    for(int i = 0; i < r; i++) {
       tab[i] = new int[c];   
    }
-   
+
    calculer_image_integrale(tab, image);
    vector<int> carac = calculer_caracteristiques_MPI(tab);
 
