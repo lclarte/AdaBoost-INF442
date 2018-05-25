@@ -4,6 +4,9 @@ using namespace std;
 
 
 void entrainer_classifieurs(vector<Classifieur*> cls, float epsilon, int K) {
+	for(int k = 0; k < K; k++) {
+		string 
+	}
 	//Cette fonction est appelee par chaque process, qui va charger K images dans le dossier de 
 	//maniere aleatoire. On va boucler sur chaque image, calculer le vecteur caracteriristique 
 	//et mettre a jour tous les classifieurs de cls
