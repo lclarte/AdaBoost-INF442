@@ -3,7 +3,7 @@
 using namespace std;
 
 
-void entrainer_classifieurs(vector<Classifieur*> cls, float epsilon, int K) {
+void entrainer_classifieurs(vector<Classifieur*> cls, float epsilon, int K, char* nom_dossier) {
 	for(int k = 0; k < K; k++) {
 		string 
 	}
