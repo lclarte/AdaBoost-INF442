@@ -1,7 +1,7 @@
-#include "utilitaires.h"
 #include <math.h>
 #include <time.h>
 #include <iterator>
+#include "utilitaires.h"
 
 /**
 	ATTENTION : FORMAT DE L'IMAGE INTEGRALE : tab[image][colonne]

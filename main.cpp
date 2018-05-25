@@ -1,13 +1,14 @@
 #include <sys/stat.h>
-#include "utilitaires.h"
+#include "apprentissage.h"
 
 using namespace cv;
    
 int main(int argc, char** argv) {
 
    MPI_Init(&argc, &argv);
+   srand(time(NULL));
 
-   cout <<"Nom du fichier : " << argv[1] << endl;
+   /*cout <<"Nom du fichier : " << argv[1] << endl;
    Mat image = charger_image(argv[1]);
    int r = image.rows; //=92
    int c = image.cols; //=112
@@ -18,6 +19,11 @@ int main(int argc, char** argv) {
 
    calculer_image_integrale(tab, image);
    vector<int> carac = calculer_caracteristiques_MPI(tab);
+   */
+
+   vector<Classifieur*> cls = vector<Classifieur*>();
+   string tmp = "../Images/";
+   entrainer_classifieurs(cls, 0, 5, tmp);
 
    MPI_Finalize();
 

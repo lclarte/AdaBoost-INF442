@@ -1,7 +1,11 @@
+#ifndef UTILITAIRES
+#define UTILITAIRES
+
 #include <iostream>
 #include <assert.h>
 #include <mpi.h>
 #include <opencv2/opencv.hpp>
+#include <time.h>
 
 using namespace cv;
 using namespace std;
@@ -33,3 +37,5 @@ vector<int> calculer_tous_DIA(int, int, int**);
 vector<int> calculer_caracteristiques_MPI(int**);
 int calculer_nombre_cases(int, int, int=NOMBRE_COLONNES*NOMBRE_LIGNES);
 void convertir_case_indices(int, int&, int&);
+
+#endif
