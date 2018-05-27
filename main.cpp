@@ -8,7 +8,8 @@ int main(int argc, char** argv) {
    MPI_Init(&argc, &argv);
    srand(time(NULL));
 
-   /*cout <<"Nom du fichier : " << argv[1] << endl;
+   /* Test 1 : test de la fonction du calcul distribue des caracteristiques
+   cout <<"Nom du fichier : " << argv[1] << endl;
    Mat image = charger_image(argv[1]);
    int r = image.rows; //=92
    int c = image.cols; //=112
@@ -20,10 +21,15 @@ int main(int argc, char** argv) {
    calculer_image_integrale(tab, image);
    vector<int> carac = calculer_caracteristiques_MPI(tab);
    */
+   clock_t t1, t2;
 
-   vector<Classifieur*> cls = vector<Classifieur*>();
-   string tmp = "../Images/";
-   entrainer_classifieurs(cls, 0, 5, tmp);
+   t1 = clock();
+   entrainement_MPI(1.0, 1000);
+   t2 = clock();
+   int taskid;
+   MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
+
+   cout << taskid << ':' <<   t2 - t1 << endl;
 
    MPI_Finalize();
 

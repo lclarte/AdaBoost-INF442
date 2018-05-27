@@ -157,6 +157,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   for(int c = 0; c < taskcases; c++) {
   	vector<int> carac_locales = vector<int>();
   	convertir_case_indices(case_actuelle_reduite, l_actuel, c_actuel);
+    cout << l_actuel << '-' << c_actuel << endl;
 
   	vector<int> tmp1 = calculer_tous_GAU(l_actuel, c_actuel, image_integrale); 
   	vector<int> tmp2 = calculer_tous_HAU(l_actuel, c_actuel, image_integrale);
@@ -235,7 +236,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
 vector<int> calculer_caracteristiques_sequentiel(int** image_integrale) {
   vector<int> caracteristiques = vector<int>();
   for(int i = 0; i < NB_CASES_REDUIT; i++) {
-    int l_actuel, c_actuel;
+    int l_actuel(0), c_actuel(0);
     convertir_case_indices(i, l_actuel, c_actuel);
 
     vector<int> tmp1 = calculer_tous_GAU(l_actuel, c_actuel, image_integrale); 
@@ -249,7 +250,6 @@ vector<int> calculer_caracteristiques_sequentiel(int** image_integrale) {
     caracteristiques.insert(caracteristiques.end(), tmp4.begin(), tmp4.end());
   }
 
-
   return caracteristiques;
 }
 
@@ -262,7 +262,7 @@ int calculer_nombre_cases(int taskid, int tasknb, int nb_cases) {
 //convertit en prenant en compte le fait que on passe DELTA_TAILLE cases dans le sens des lignes et colonnes
 //on suppose que indice est deja dans NOMBRE_LIGNES*NOMBRE_COLONNES/(DELTA_TAILLE**2) 
 void convertir_case_indices(int indice_reduit, int& ligne_reelle, int& colonne_reelle) {
-	ligne_reelle = DELTA_TAILLE*(indice_reduit/NB_CLN_REDUIT)-1;
-	colonne_reelle = DELTA_TAILLE*(indice_reduit%NB_CLN_REDUIT)-1;
+	ligne_reelle = DELTA_TAILLE*(indice_reduit/NB_CLN_REDUIT); //pourquoi un -1 ? 
+	colonne_reelle = DELTA_TAILLE*(indice_reduit%NB_CLN_REDUIT);
 }
 

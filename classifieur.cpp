@@ -27,3 +27,11 @@ void Classifieur::regression(int x, int c, float epsilon) {
 int Classifieur::get_indice() {
 	return this->indice;
 }
+
+float Classifieur::get_w1() {
+	return this->w1;
+}
+
+float Classifieur::get_w2() {
+	return this->w2;
+}
