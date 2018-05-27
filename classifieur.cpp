@@ -23,3 +23,7 @@ void Classifieur::regression(int x, int c, float epsilon) {
 	this->w1 -= epsilon*(h-c)*x;
 	this->w2 -= epsilon*(h-c);
 }
+
+int Classifieur::get_indice() {
+	return this->indice;
+}

@@ -19,8 +19,7 @@ total : 9774765 > 7000000 (experimentalement)
 peut etre une peitte erreur de calcul au niveau des indicages mais je ne pense pas que ca change grand chose
 */
 
-
-void calculer_image_integrale(int **image_integrale, Mat image) {
+void calculer_image_integrale(int** image_integrale, Mat image){
       int rows = image.rows;
       int cols = image.cols;
       
@@ -36,7 +35,7 @@ void calculer_image_integrale(int **image_integrale, Mat image) {
      
 }
 
-Mat charger_image(char* filename) {
+Mat charger_image(const char* filename) {
    return imread(filename, IMREAD_GRAYSCALE);
 }
 
@@ -231,6 +230,27 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   }  
   
 
+}
+
+vector<int> calculer_caracteristiques_sequentiel(int** image_integrale) {
+  vector<int> caracteristiques = vector<int>();
+  for(int i = 0; i < NB_CASES_REDUIT; i++) {
+    int l_actuel, c_actuel;
+    convertir_case_indices(i, l_actuel, c_actuel);
+
+    vector<int> tmp1 = calculer_tous_GAU(l_actuel, c_actuel, image_integrale); 
+    vector<int> tmp2 = calculer_tous_HAU(l_actuel, c_actuel, image_integrale);
+    vector<int> tmp3 = calculer_tous_EXT(l_actuel, c_actuel, image_integrale);
+    vector<int> tmp4 = calculer_tous_DIA(l_actuel, c_actuel, image_integrale);
+
+    caracteristiques.insert(caracteristiques.end(), tmp1.begin(), tmp1.end());
+    caracteristiques.insert(caracteristiques.end(), tmp2.begin(), tmp2.end());
+    caracteristiques.insert(caracteristiques.end(), tmp3.begin(), tmp3.end());
+    caracteristiques.insert(caracteristiques.end(), tmp4.begin(), tmp4.end());
+  }
+
+
+  return caracteristiques;
 }
 
 int calculer_nombre_cases(int taskid, int tasknb, int nb_cases) {
