@@ -35,3 +35,8 @@ float Classifieur::get_w1() {
 float Classifieur::get_w2() {
 	return this->w2;
 }
+
+// c est 1 si visage, -1 sinon
+int Classifieur::erreur(vector<int> carac, int c) {
+	return this->classifier(carac.at(this->indice)) == c ? 0 : 1;
+}

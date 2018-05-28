@@ -113,23 +113,21 @@ vector<Classifieur*> entrainement_MPI(float epsilon, int K) {
 	}
 	
 	float* buffer_w_global = new float[2*nb_classifieurs*tasknb];
-		MPI_Gather(buffer_w_local, nb_classifieurs, MPI_FLOAT, buffer_w_global, nb_classifieurs, MPI_FLOAT, root, MPI_COMM_WORLD);
-		if(taskid == root) {
+	MPI_Gather(buffer_w_local, nb_classifieurs, MPI_FLOAT, buffer_w_global, nb_classifieurs, MPI_FLOAT, root, MPI_COMM_WORLD);
+	if(taskid == root) {
 		//Pour le root, on va en plus calculer les premiers w1 et w2
 		vector<Classifieur*> retour = vector<Classifieur*>();//liste de classifieurs qu'on va retourner
 		for(int i = 0; i < NB_CARAC%tasknb; i++) {
 			retour.push_back(new Classifieur(1.0, 0.0, i));
 		}
 		entrainer_classifieurs(retour, epsilon, K, DEFAULT_FOLDER);
-
-		//on ajoute les classifieurs qui correspondent au tableau buffer_w_global
+			//on ajoute les classifieurs qui correspondent au tableau buffer_w_global
 		for(int i = 0; i < nb_classifieurs*tasknb; i++) {
 			Classifieur* cl = new Classifieur(buffer_w_global[2*i], buffer_w_global[2*i+1], i+(NB_CARAC%tasknb));
 			retour.push_back(cl);
 		}
-
 		return retour;
-		}
+	}
 	return vector<Classifieur*>(); //pour les autres processus on s'en fout 
 	//de ce qu'on renvoie	
 	

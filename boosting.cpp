@@ -8,18 +8,34 @@ ClassifieurBooste::ClassifieurBooste() {
 
 Classifieur::~Classifieur() { }
 
+//Dans cette fonction, on initialise TOUS les classifieurs pour le vecteur caracteristique
 void Classifieur::initialiser_classifieurs(float epsilon, int K) {
 	//Initialise le tableau cls_faibles par le MPI
 	cls_faibles = entrainenement_MPI(epsilon, K);
 }
 
+/*
+* Une maniere intelligence de faire les choses est que chaque processus entraine dans son coin les classifieurs qui lui sont
+* assignes, et ensuite lors de adaboost on NE VA PAS envoyer les valeurs des differents classifieurs mais a chaque etape de AdaBoost
+*les processus vont envoyer leur minorant, puis on va appliquer l'algorithme
+*Avantage : On s'economise pas mal de calculs
+*Inconvenient : un peu relou a coder
+*/
+
+/*Ici, on suppose qu'on a deja appele initialiser_classifieurs pour entrainer les classifieurs*/
 void Classifieur::adaboost(int n_) {
-	n = n_;
+	int taskid, tasknb;
+	const int root = 0;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
+	MPI_Comm_size(MPI_COMM_WORLD, &tasknb);
+
+	this->n = n_;
 	
 	//Dans un premier temps, on initialise les vecteurs
 	poids = vector<float>();
-	for(int i = 0; i < n; i++) {
-		poids.push_back(1/n);
+	for(int i = 0; i < this->n; i++) {
+		poids.push_back(1/(this->n));
 	}
 
 	/*On va calculer pour tout classifieur, la quantite E(h^k(x_j), c_j) qui est une quantite fixee
