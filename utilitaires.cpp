@@ -157,7 +157,7 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   for(int c = 0; c < taskcases; c++) {
   	vector<int> carac_locales = vector<int>();
   	convertir_case_indices(case_actuelle_reduite, l_actuel, c_actuel);
-    cout << l_actuel << '-' << c_actuel << endl;
+    cout << l_actuel << '-' << c_actuel << endl;  
 
   	vector<int> tmp1 = calculer_tous_GAU(l_actuel, c_actuel, image_integrale); 
   	vector<int> tmp2 = calculer_tous_HAU(l_actuel, c_actuel, image_integrale);
