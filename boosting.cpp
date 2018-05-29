@@ -2,7 +2,7 @@
 
 ClassifieurBooste::ClassifieurBooste() {
 	cls_faibles = vector<Classifieur*>();
-	poids 		= vector<float>();
+	alpha 		= vector<float>();
 	int n = 0;
 }
 
@@ -33,9 +33,9 @@ void Classifieur::adaboost(int n_) {
 	this->n = n_;
 	
 	//Dans un premier temps, on initialise les vecteurs
-	poids = vector<float>();
+	alpha = vector<float>();
 	for(int i = 0; i < this->n; i++) {
-		poids.push_back(1/(this->n));
+		alpha.push_back(0);
 	}
 
 	/*On va calculer pour tout classifieur, la quantite E(h^k(x_j), c_j) qui est une quantite fixee
