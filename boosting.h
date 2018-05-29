@@ -14,7 +14,7 @@ public:
 
 	vector<Classifieur*> cls_faibles;
 	int n; //nombre d'elements de la base de validation utilises
-	vector<float> poids;
+	vector<float> alpha;
 
 };
 #endif
