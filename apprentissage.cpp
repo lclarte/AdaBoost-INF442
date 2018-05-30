@@ -11,8 +11,7 @@ using namespace std;
 	//l'entraingement des classifieurs se fait grace a la fonctoin regression
 void entrainer_classifieurs(vector<Classifieur*> cls, float epsilon, int K, string nom_dossier) {
 	//il faut avoir appele srand avant
-	const int NB_F_TOTAL = NB_F_NEG + NB_F_POS;
-
+  
 	for(int k = 0; k < K; k++) {
 
 		/***

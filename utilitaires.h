@@ -7,6 +7,12 @@
 #include <opencv2/opencv.hpp>
 #include <time.h>
 
+const int APP = 0; //numero pour reperer les dossiers
+const int DEV = 1;
+const int TEST = 2;
+
+const std::string DEFAULT_FOLDER = "/usr/local/INF442-2018/P5/";
+
 using namespace cv;
 using namespace std;
 
@@ -20,8 +26,16 @@ const int NB_CASES_REDUIT = NOMBRE_CASES/(DELTA_TAILLE*DELTA_TAILLE);
 const int NB_LGN_REDUIT   = NOMBRE_LIGNES/DELTA_TAILLE;
 const int NB_CLN_REDUIT   = NOMBRE_COLONNES/DELTA_TAILLE;
 
+//Nombres de fichiers positifs et negatifs
+const int NB_F_NEG = 4416;
+const int NB_F_POS = 819;
+const int NB_F_TOTAL = NB_F_POS + NB_F_NEG;
+
 void calculer_image_integrale(int**, Mat);
 Mat charger_image(const char*);
+
+//Recupere la caracteristique de l'image en fonction de son numero dans la base de donnees
+vector<int> get_carac(int, int&, int=DEV);
 
 int rectangle(int, int, int, int, int**); //calcule la somme dans le rectangle a partir de l'image integrale
 int GAU(int, int, int, int, int, int**); //on soustrait la zone de droite a la zone de gauche

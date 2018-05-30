@@ -1,6 +1,7 @@
 #include <math.h>
 #include <time.h>
 #include <iterator>
+#include<string>
 #include "utilitaires.h"
 
 /**
@@ -37,6 +38,66 @@ void calculer_image_integrale(int** image_integrale, Mat image){
 
 Mat charger_image(const char* filename) {
    return imread(filename, IMREAD_GRAYSCALE);
+}
+
+vector<int> get_carac(int nb_fichier, int& categorie, int dossier) {
+  string nom_dossier = DEFAULT_FOLDER;
+  switch(dossier){
+    
+    case APP:
+      nom_dossier += "app∕";
+      break;
+    case DEV:
+      nom_dossier += "dev/";
+      break;
+     
+    case TEST:
+      nom_dossier += "test/";
+      break;
+    
+    default:
+      break;
+  }
+  
+  string nom_fichier = "";
+  int categorie_fichier = -1;
+
+  int nb_fichier = rand() % NB_F_TOTAL;
+	if(nb_fichier >= NB_F_NEG) {
+		nb_fichier -= NB_F_NEG;
+		stringstream ss;
+		ss << nb_fichier;
+		string str_nb_fichier = ss.str();
+			nom_fichier = nom_dossier + "pos/im" + str_nb_fichier + ".jpg"; 
+		categorie_fichier = 1;
+		categorie = 1;
+	}
+	else{
+		stringstream ss;
+		ss << nb_fichier;
+		string str_nb_fichier = ss.str();
+		nom_fichier = nom_dossier + "neg/im" + str_nb_fichier + ".jpg";
+		categorie = -1;
+	}
+	Mat image = charger_image(nom_fichier.c_str());
+	/*
+	* Ensuite, on va calculer le vecteur caracteristique
+	*/ 
+	int** image_integrale = new int*[NOMBRE_LIGNES];
+	for(int l = 0; l < NOMBRE_LIGNES; l++) {
+		image_integrale[l] = new int[NOMBRE_COLONNES];
+	}
+	calculer_image_integrale(image_integrale, image);
+	/*
+	* REMARQUE IMPORTANTE : Ici, chaque processus calcule les caracteristiques de maniere sequentielle 
+	(et n'utilise donc pas la fonction calculer_caracteristiques_MPI) car le gain de vitesse n'est pas 
+	(encore) significatif et en plus ca peut creer des blocages via les differents Send/Rcv de cette 
+	fonction et de l'autre qui "se croisent"
+	*/
+	vector<int> vec_carac = calculer_caracteristiques_sequentiel(image_integrale); //A remplacer eventuellement par du paralleliser 
+	
+	return vec_carac;
+	
 }
 
 //attention, i_i est stockee dans le format i_i[lignes][colonnnes]
