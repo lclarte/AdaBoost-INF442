@@ -6,10 +6,10 @@ ClassifieurBooste::ClassifieurBooste() {
 	int n = 0;
 }
 
-Classifieur::~Classifieur() { }
+ClassifieurBooste::~ClassifieurBooste() { }
 
 //Dans cette fonction, on initialise TOUS les classifieurs pour le vecteur caracteristique
-void Classifieur::initialiser_classifieurs(float epsilon, int K) {
+void ClassifieurBooste::initialiser_classifieurs(float epsilon, int K) {
 	//Initialise le tableau cls_faibles par le MPI
 	cls_faibles = entrainenement_MPI(epsilon, K);
 }
@@ -23,7 +23,7 @@ void Classifieur::initialiser_classifieurs(float epsilon, int K) {
 */
 
 /*Ici, on suppose qu'on a deja appele initialiser_classifieurs pour entrainer les classifieurs*/
-void Classifieur::adaboost(int n_) {
+void ClassifieurBooste::adaboost(int n_) {
 	int taskid, tasknb;
 	const int root = 0;
 
