@@ -20,6 +20,73 @@ total : 9774765 > 7000000 (experimentalement)
 peut etre une peitte erreur de calcul au niveau des indicages mais je ne pense pas que ca change grand chose
 */
 
+int binary_to_int(int* binaire){
+	int sum = 0;
+	for (int i = 0; i<(sizeof(binaire)/sizeof(*binaire));++i){
+		sum = sum + binaire[i]*pow(2,i);
+	}
+	return sum;
+}
+
+int ou_exclusif(int a,int b){
+	if (a != b){return 1;}
+	else {return 0;}
+}
+
+int* int_to_binary(int id, int taille){
+	int* binaire = new int[taille];
+	for (int i = 0;i<taille;i++){binaire[i]=0;}
+	int nombre = id;
+	int reste = 0;
+	int i = 0;
+	while (nombre != 0){
+		reste = nombre%2;
+		nombre = nombre/2;
+		binaire[i] = reste;
+		++i;
+	}
+	return binaire;
+}
+
+int* gray_to_binary(int* code_gray){
+	int* binaire = new int[sizeof(code_gray)/sizeof(*code_gray)];
+	binaire[sizeof(code_gray)/sizeof(*code_gray)-1] = code_gray[sizeof(code_gray)/sizeof(*code_gray)-1];
+	for(int i = sizeof(code_gray)/sizeof(*code_gray)-2;i>=0;--i){
+		binaire[i] = ou_exclusif(binaire[i+1],code_gray[i]);
+	}
+	return binaire;
+}
+
+int gray_to_id(int* code_gray, bool valeur, int indice){
+	int* code_gray_bis = new int[sizeof(code_gray)/sizeof(*code_gray)];
+	for(int i =0;i<sizeof(code_gray)/sizeof(*code_gray);i++){
+		code_gray_bis[i] = code_gray[i];
+	}
+	if(valeur){
+		code_gray_bis[indice] = 1;
+	}
+	else{ 
+		code_gray_bis[indice] = 0;
+	}
+	int* binaire = gray_to_binary(code_gray_bis);
+	return binary_to_int(binaire);
+
+}
+
+int* binary_to_code_gray(int* id,int taille){
+	int* code_gray = new int[taille];
+	int* binaire_decale = new int[taille];
+	for (int i =0; i<taille-1;++i){
+		code_gray[i] = ou_exclusif(id[i],id[i+1]);
+	code_gray[taille-1] = id[taille-1];
+	return code_gray;
+}
+}
+
+
+int* int_to_code_gray(int id,int taille){
+	return binary_to_code_gray(int_to_binary(id,taille),taille);}
+
 void calculer_image_integrale(int** image_integrale, Mat image){
       int rows = image.rows;
       int cols = image.cols;
@@ -184,42 +251,35 @@ vector<int> calculer_tous_DIA(int l_depart, int c_depart, int** image_integrale)
 	}
 	return carac_DIA;
 }
-
-vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
-  //On fait l'hypothese que MPI_Init et MPI_Finalize sont deja appeles dans le main
-
-  const int root = 0;
-  clock_t t1, t2; //pour avoir le temps ecoule : t1 = clock()
-  int tasknb, taskid;
-
-  MPI_Comm_size(MPI_COMM_WORLD, &tasknb);
-  MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
-
-  //1erement, on verifie qu'on a une puissance de deux pour le nombre de proc.
-  const float k = log2(tasknb);
-  if(floor(k) - k < 0) {
-
+vector<int> calculer_caracteristiques_MPI(int** image_integrale){
+//clock_t t1, t2; //pour avoir le temps ecoule : t1 = clock()
+//t = clock();
+int tasknb;
+int taskid;
+MPI_Comm_size(MPI_COMM_WORLD, &tasknb);
+MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
+const float k = log2(tasknb);
+if(floor(k) - k < 0) {
       cerr << "Probleme dans le nombre de processus : il doit etre une puissance de deux" << endl;
       return vector<int>();
-  }
+}
 
-  //2emement, on va repartir selon taskid les calculs des caracteristiques
-  int taskcases = calculer_nombre_cases(taskid, tasknb);
+//On converti les id de chaque processus en code gray pour se placer dans la topologie de
+//l'hypercube pour pouvoir transmettre les donnees plus rapidement
+int* taskid_code_gray = int_to_code_gray(taskid,k);
+int taskcases = calculer_nombre_cases(taskid, tasknb); //calcul du nombre de taches a effectuer pour chaque
+//processus
+int case_actuelle_reduite = taskid; //case actuelle est un nombre, faut le convertir en couple (l, c)
+int l_actuel, c_actuel;
+int nb_total_cases = 0;
+vector<int> contenu_total = vector<int>();
 
-  //Ensuite, on vectora calculer les dites carac.
-  /**
-   * On a un tableau de 4*taskcases cases (parce qu'on calcule pour GAU, HAU, EXT et DIA)
-   * On parcourt dans une boucle toutes les cases du tableau et on appelle calculer_tous_***
-   */
-  vector<int>* carac_locales_array = new vector<int>[taskcases]; //stocke les vector 
-  int case_actuelle_reduite = taskid; //case actuelle est un nombre, faut le convertir en couple (l, c)
-  int l_actuel, c_actuel;
-  int nb_total_cases = 0;
-  for(int c = 0; c < taskcases; c++) {
-  	vector<int> carac_locales = vector<int>();
-  	convertir_case_indices(case_actuelle_reduite, l_actuel, c_actuel);
-    cout << l_actuel << '-' << c_actuel << endl;  
-
+for(int c = 0; c < taskcases; c++) {
+	//tableau qu'on communique
+	vector<int>* carac_locales_array = new vector<int>[tasknb];
+	vector<int> carac_locales = vector<int>();
+	convertir_case_indices(case_actuelle_reduite, l_actuel, c_actuel);
+	//calcul des caracteristiques
   	vector<int> tmp1 = calculer_tous_GAU(l_actuel, c_actuel, image_integrale); 
   	vector<int> tmp2 = calculer_tous_HAU(l_actuel, c_actuel, image_integrale);
   	vector<int> tmp3 = calculer_tous_EXT(l_actuel, c_actuel, image_integrale);
@@ -230,68 +290,58 @@ vector<int> calculer_caracteristiques_MPI(int** image_integrale) {
   	carac_locales.insert(carac_locales.end(), tmp3.begin(), tmp3.end());
   	carac_locales.insert(carac_locales.end(), tmp4.begin(), tmp4.end());
 
-  	carac_locales_array[c] = carac_locales;
+  	carac_locales_array[0] = carac_locales;
   	case_actuelle_reduite += tasknb;
   	nb_total_cases += carac_locales.size();
-  }
-
-  cout << "Le process " << taskid << " a termine. Nombre de cas traites : " << nb_total_cases << endl;
-
-  
-  //3emement, on va envoyer les carac. au root de la facon suivante (idee basique)
-  //Le root va parcourir l'image et regarder case par case le proc. qui est cense envoyer 
-  //les donnees.
-  if(taskid == root) {
-  	int compteur_array_local = 0; //compte la case du tableau carac_locale_array a stocker
-  	vector<int> contenu_total = vector<int>();
-
-  	//on parcourt toutes les cases 
-  	for(int c = 0; c < NB_CASES_REDUIT; c++) {
-  		MPI_Status* status;
-  		int task_src = c % tasknb;
-	  	if(task_src != root){	
+	//On parcout les bits en code gray du poids le plus faible au point le plus fort
+	for (int i =0; i < k;++i){
+		if (taskid_code_gray[i]==1){
+			int sizeoft = carac_locales_array[i].size();
+			//chaque processus avec sur le bit etudie un "1" envoie au processus avec le meme code
+			//gray mais un "0" a cet endroit
+  			MPI_Send(&sizeoft, 1, MPI_INT, gray_to_id(taskid_code_gray,false,i), 0,MPI_COMM_WORLD);
+			if(carac_locales_array[i].size() > 0){
+				int* locale = new int[carac_locales_array[i].size()];
+				for (int landa=0; landa<carac_locales_array[i].size();landa++){
+					  locale[landa] = carac_locales_array[i][landa];}
+  				MPI_Send(locale, carac_locales_array[i].size(), MPI_INT, gray_to_id(taskid_code_gray,false,i), 0, MPI_COMM_WORLD);
+  			}
+			MPI_Barrier(MPI_COMM_WORLD);}
+		else{
+			MPI_Status* status;
 	  		int taille_contenu = 0;
-	  		int* contenu_recu;
-	  		MPI_Recv(&taille_contenu, 1, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
+	  		
+	  		MPI_Recv(&taille_contenu, 1, MPI_INT, gray_to_id(taskid_code_gray,true,i), 0, MPI_COMM_WORLD, status);
 	  		if(taille_contenu > 0) {
-	  			contenu_recu = new int[taille_contenu];
-	  			MPI_Recv(contenu_recu, taille_contenu, MPI_INT, task_src, 0, MPI_COMM_WORLD, status);
-	  			for(int i = 0; i < taille_contenu; i++) {
-	  				contenu_total.push_back(contenu_recu[i]); 
-	  			}
-	  		}
+				int* contenu_recu = new int[taille_contenu];
+	  			MPI_Recv(contenu_recu, taille_contenu, MPI_INT, gray_to_id(taskid_code_gray,true,i), 0, MPI_COMM_WORLD, status);
+				if(taskid == 0){
+	  				for(int j = 0; j < taille_contenu; j++) {
+	  					contenu_total.push_back(contenu_recu[j]); 
+	  				}
+				}
+				else{
+					vector<int> contenu_provisoire;
+					for(int j=0;j<carac_locales_array[i].size();j++){
+						contenu_provisoire.push_back(carac_locales_array[i][j]);
+					}
+					for(int j = 0; j < taille_contenu; j++) {
+	  					contenu_provisoire.push_back(contenu_recu[j]); 
+	  				}
+	  			//on a le nouveau vecteur a transmettre;	
+	  			carac_locales_array[i+1] = contenu_provisoire;	
+				}
+			}
+			MPI_Barrier(MPI_COMM_WORLD);}
+		}
 
-	  	}
-	  	else{
-	  		for(int i = 0; i < carac_locales_array[compteur_array_local].size(); i++) {
-	  			contenu_total.push_back(carac_locales_array[compteur_array_local].at(i));
-	  		}
-	  		compteur_array_local += 1;
-	  	  
-      }
+   }
+//t=t-clock();
 
-	}
-  cout << "Taille totale du vecteur caracteristiques : " << contenu_total.size() << endl;
-  return contenu_total;
-  }
+//cout << "temps écoulé : " << t << endl;
 
-  else{
-  	 
-    //du cote des autres process, on va envoyer en continu tous les data
-  	for(int t = 0; t < taskcases; t++) {
-  		vector<int> a_envoyer = carac_locales_array[t];
-  		int taille_envoi = a_envoyer.size();
-  		MPI_Send(&taille_envoi, 1, MPI_INT, root, 0, MPI_COMM_WORLD);
-  		if(taille_envoi > 0){
-  			MPI_Send(a_envoyer.data(), a_envoyer.size(), MPI_INT, root, 0, MPI_COMM_WORLD);
-  		}
-  	}
 
-    return vector<int>();
-
-  }  
-  
-
+return contenu_total;
 }
 
 vector<int> calculer_caracteristiques_sequentiel(int** image_integrale) {

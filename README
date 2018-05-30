@@ -1,3 +1,6 @@
+Ce dossier "code_jules" est le meme que sur le github a ceci pres que la fonction 
+de calcul des caracteristiques pour le MPI est changee.
+
 Pour le Makefile, voir celui fournit dans le projet d'exemple.
 
 Pour l'execution, taper 

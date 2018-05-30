@@ -21,15 +21,17 @@ int main(int argc, char** argv) {
    calculer_image_integrale(tab, image);
    vector<int> carac = calculer_caracteristiques_MPI(tab);
    */
+   
    clock_t t1, t2;
 
    t1 = clock();
-   entrainement_MPI(1.0, 1000);
+   int c;
+   get_carac(0, c); 
    t2 = clock();
    int taskid;
    MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
 
-   cout << taskid << ':' <<   t2 - t1 << endl;
+   cout << taskid << ':' << ((float)(t2 - t1))/((float)CLOCKS_PER_SEC) << endl;
 
    MPI_Finalize();
 

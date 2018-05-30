@@ -73,6 +73,7 @@ void entrainer_classifieurs(vector<Classifieur*> cls, float epsilon, int K, stri
 
 }
 
+//Chaque classifieur s'occcupe d'un element des caracteristiques
 vector<Classifieur*> entrainement_MPI(float epsilon, int K) {
 	/*Dans un premier temps, on va repartir les indices des differents 
 	* classifieurs pour chaque processus
