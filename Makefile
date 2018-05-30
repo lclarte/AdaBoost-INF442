@@ -6,8 +6,8 @@ LIBS = -L /usr/local/opencv-3.4.1/lib64 -lopencv_core -lopencv_imgcodecs -lopenc
 # --- targets
 all: main
 
-main: utilitaires.o classifieur.o apprentissage.o boosting.o main.o
-	$(CC) -o main utilitaires.o classifieur.o apprentissage.o boosting.o main.o $(LIBS)
+main: utilitaires.o classifieur.o apprentissage.o boosting.o test.o main.o
+	$(CC) -o main utilitaires.o classifieur.o apprentissage.o boosting.o test.o main.o $(LIBS)
 
 %.o: %.cpp
 	$(CC) -c $(CFLAGS) $<
