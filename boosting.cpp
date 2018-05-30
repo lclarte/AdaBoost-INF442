@@ -11,7 +11,7 @@ ClassifieurBooste::~ClassifieurBooste() { }
 //Dans cette fonction, on initialise TOUS les classifieurs pour le vecteur caracteristique
 void ClassifieurBooste::initialiser_classifieurs(float epsilon, int K) {
 	//Initialise le tableau cls_faibles par le MPI
-	cls_faibles = entrainenement_MPI(epsilon, K);
+	cls_faibles = entrainement_MPI(epsilon, K);
 }
 
 /*
