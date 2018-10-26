@@ -1,7 +1,6 @@
-Pour le Makefile, voir celui fournit dans le projet d'exemple.
+Implémentation de l'algorithme d'Adaboost, appliqué à la détection d'images. Réussite de 93% sur notre ensemble de données de test.
 
-Pour l'execution, taper 
-
+Pour executer le code, taper cette ligne : 
 LD_LIBRARY_PATH=/usr/local/opencv-3.4.1/lib64 /usr/local/openmpi-3.0.1/bin/mpirun -np 4 main /usr/local/INF442-2018/P5/test/neg/im0.jpg 
 
 (cf cette URL : https://moodle.polytechnique.fr/pluginfile.php/107117/mod_resource/content/2/README)
